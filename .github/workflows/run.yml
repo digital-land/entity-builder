@@ -2,7 +2,7 @@ name: Build entity database
 on:
   schedule:
   - cron: 0 4 * * *
-  workflow_dispatch: null
+  workflow_dispatch:
 env:
   DLB_BOT_EMAIL: ${{ secrets.DLB_BOT_EMAIL }}
   DLB_BOT_TOKEN: ${{ secrets.DLB_BOT_TOKEN }}
