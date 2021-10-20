@@ -5,19 +5,25 @@ include makerules/development.mk
 
 DB=dataset/entity.sqlite3
 
-first-pass::
+first-pass:: $(DB)
+
+dataset/entity.csv: bin/index.py 
 	bin/download.sh
+	@mkdir -p dataset/
 	bin/index.py
 
-second-pass::	$(DB)
-
-$(DB):	bin/load.py
-	@rm -f $@
+$(DB):	bin/load.py dataset/entity.csv
 	@mkdir -p dataset/
 	python3 bin/load.py $@
 
 datasette:	$(DB)
-	datasette serve $(DB)
+	datasette serve $(DB) \
+	--setting sql_time_limit_ms 5000 \
+	--load-extension $(SPATIALITE_EXTENSION) \
+	--metadata metadata.json
+
+init::
+	datasette install datasette-leaflet-geojson
 
 clean::
 	rm -rf ./var

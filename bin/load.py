@@ -6,25 +6,27 @@ import os
 import sys
 import csv
 import json
+import logging
 from digital_land.package.sqlite import SqlitePackage
 
 
 tables = {
-    "typology": "specification",
-    "dataset": "specification",
-    "theme": "specification",
-    "field": "specification",
     "entity": "dataset",
-    #"geometry": "dataset",
-    #"schema-field": "dataset",
+    "geometry": "dataset",
 }
 
 
 indexes = {
-    #"issue": ["resource", "pipeline", "row-number", "field", "issue-type"],
+    "entity": ["entity", "typology", "dataset", "reference", "organisation-entity", "json"],
+    "geometry": ["entity", "geometry-geom", "point-geom"],
 }
 
 
 if __name__ == "__main__":
+    level = logging.DEBUG 
+    level = logging.INFO 
+    logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s")
+
     package = SqlitePackage("entity", tables=tables, indexes=indexes)
+    package.spatialite()
     package.create(sys.argv[1])
