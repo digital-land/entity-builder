@@ -19,8 +19,7 @@ def properties(row, fields):
         for field in row
         if row[field]
         and field
-        not in ["geography", "geometry", "organisation", "point", "slug"]
-        + fields
+        not in ["geography", "geometry", "organisation", "point", "slug"] + fields
     }
 
 
@@ -77,7 +76,6 @@ for organisation, row in organisations.items():
 
     e.writerow(row)
 
-sys.exit(0)
 
 for path in glob.glob("var/dataset/*.csv"):
     dataset = Path(path).stem
