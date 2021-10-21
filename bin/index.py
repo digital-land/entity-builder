@@ -13,9 +13,20 @@ import geojson
 import shapely.wkt
 
 
-organisation = {}
+def properties(row, fields):
+    return {
+        field: row[field]
+        for field in row
+        if row[field]
+        and field
+        not in ["geography", "geometry", "organisation", "point", "slug"]
+        + fields
+    }
+
+
+organisations = {}
 for row in csv.DictReader(open("var/cache/organisation.csv")):
-    organisation[row["organisation"]] = row
+    organisations[row["organisation"]] = row
 
 specification = Specification()
 entity_fields = specification.schema_field["entity"]
@@ -35,11 +46,44 @@ g = csv.DictWriter(
 e.writeheader()
 g.writeheader()
 
+for organisation, row in organisations.items():
+    row["entity"] = organisations[row["organisation"]]["entity"]
+
+    row["dataset"] = organisation.split(":")[0]
+    row[row["dataset"]] = organisation.split(":")[1]
+
+    del row["organisation"]
+
+    if not row.get("json", ""):
+        row["json"] = json.dumps(properties(row, entity_fields))
+        if row["json"] == {}:
+            del row["json"]
+
+    # responsible organisation will be DLUCH for LAs, GLA for Old Oak Common, companies house for companies, etc
+    # row["organisation-entity"] = organisations[row["organisation"]]["entity"]
+
+    # organisation,entity,wikidata,name,website,twitter,statistical-geography,boundary,toid,opendatacommunities,opendatacommunities-area,billing-authority,census-area,local-authority-type,combined-authority,esd-inventories,local-resilience-forum,region,addressbase-custodian,company,wikipedia,start-date,end-date
+
+    if not row.get("wikipedia-url", ""):
+        row["wikipedia-url"] = row["wikipedia"]
+
+    if row["wikipedia"] and not row.get("wikipedia-url", ""):
+        row["wikipedia-url"] = row["wikipedia"]
+        del row["wikipedia"]
+
+    if row["wikidata"] and not row.get("wikidata-item", ""):
+        row["wikidata-item"] = row["wikidata"]
+        del row["wikidata"]
+
+    e.writerow(row)
+
+sys.exit(0)
+
 for path in glob.glob("var/dataset/*.csv"):
     dataset = Path(path).stem
     for row in csv.DictReader(open(path)):
         if row.get("organisation", ""):
-            row["organisation-entity"] = organisation[row["organisation"]]["entity"]
+            row["organisation-entity"] = organisations[row["organisation"]]["entity"]
 
         row.setdefault("dataset", dataset)
         row.setdefault("status", 200)
@@ -52,16 +96,9 @@ for path in glob.glob("var/dataset/*.csv"):
             row["typology"] = specification.field_typology(row["dataset"])
 
         if not row.get("json", ""):
-            properties = {
-                field: row[field]
-                for field in row
-                if row[field]
-                and field
-                not in ["geography", "geometry", "organisation", "point", "slug"]
-                + entity_fields
-            }
-            if properties != {}:
-                row["json"] = json.dumps(properties)
+            row["json"] = json.dumps(properties(row, entity_fields))
+            if row["json"] == {}:
+                del row["json"]
 
         if row.get("geometry", ""):
             wkt = shapely.wkt.loads(row["geometry"])

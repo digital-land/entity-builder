@@ -23,8 +23,8 @@ indexes = {
 
 
 if __name__ == "__main__":
-    level = logging.DEBUG 
-    level = logging.INFO 
+    level = logging.DEBUG
+    level = logging.INFO
     logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s")
 
     package = SqlitePackage("entity", tables=tables, indexes=indexes)
