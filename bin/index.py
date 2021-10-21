@@ -89,6 +89,9 @@ for path in glob.glob("var/dataset/*.csv"):
         if not row.get("reference", ""):
             if row.get("geography", ""):
                 row["reference"] = row["geography"].split(":")[1]
+            elif row.get(dataset, ""):
+                row["reference"] = row[dataset]
+                del row[dataset]
 
         if not row.get("typology", ""):
             row["typology"] = specification.field_typology(row["dataset"])
