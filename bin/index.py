@@ -11,6 +11,8 @@ from pathlib import Path
 from digital_land.specification import Specification
 import geojson
 import shapely.wkt
+from shapely.geometry import MultiPolygon
+from decimal import Decimal
 
 
 def properties(row, fields):
@@ -30,6 +32,7 @@ for row in csv.DictReader(open("var/cache/organisation.csv")):
 specification = Specification()
 entity_fields = specification.schema_field["entity"]
 geometry_fields = specification.schema_field["geometry"]
+old_entity_fields = specification.schema_field["old-entity"]
 
 e = csv.DictWriter(
     open("dataset/entity.csv", "w", newline=""),
@@ -41,40 +44,15 @@ g = csv.DictWriter(
     fieldnames=geometry_fields,
     extrasaction="ignore",
 )
+r = csv.DictWriter(
+    open("dataset/old-entity.csv", "w", newline=""),
+    fieldnames=old_entity_fields,
+    extrasaction="ignore",
+)
 
 e.writeheader()
 g.writeheader()
-
-for organisation, row in organisations.items():
-    row["entity"] = organisations[row["organisation"]]["entity"]
-
-    row["dataset"] = organisation.split(":")[0]
-    row[row["dataset"]] = organisation.split(":")[1]
-
-    del row["organisation"]
-
-    if not row.get("json", ""):
-        row["json"] = json.dumps(properties(row, entity_fields))
-        if row["json"] == {}:
-            del row["json"]
-
-    # responsible organisation will be DLUCH for LAs, GLA for Old Oak Common, companies house for companies, etc
-    # row["organisation-entity"] = organisations[row["organisation"]]["entity"]
-
-    # organisation,entity,wikidata,name,website,twitter,statistical-geography,boundary,toid,opendatacommunities,opendatacommunities-area,billing-authority,census-area,local-authority-type,combined-authority,esd-inventories,local-resilience-forum,region,addressbase-custodian,company,wikipedia,start-date,end-date
-
-    if not row.get("wikipedia-url", ""):
-        row["wikipedia-url"] = row["wikipedia"]
-
-    if row["wikipedia"] and not row.get("wikipedia-url", ""):
-        row["wikipedia-url"] = row["wikipedia"]
-        del row["wikipedia"]
-
-    if row["wikidata"] and not row.get("wikidata-item", ""):
-        row["wikidata-item"] = row["wikidata"]
-        del row["wikidata"]
-
-    e.writerow(row)
+r.writeheader()
 
 
 for path in glob.glob("var/dataset/*.csv"):
@@ -84,7 +62,6 @@ for path in glob.glob("var/dataset/*.csv"):
             row["organisation-entity"] = organisations[row["organisation"]]["entity"]
 
         row.setdefault("dataset", dataset)
-        row.setdefault("status", 200)
 
         if not row.get("reference", ""):
             if row.get("geography", ""):
@@ -101,16 +78,24 @@ for path in glob.glob("var/dataset/*.csv"):
             if row["json"] == {}:
                 del row["json"]
 
-        if row.get("geometry", ""):
-            wkt = shapely.wkt.loads(row["geometry"])
-            row["geojson"] = geojson.Feature(geometry=wkt)
+        e.writerow(row)
+
+        # write geometry
+        shape = row.get("geometry", "")
+        point = row.get("point", "")
+        wkt = shape or point
+
+        if wkt:
+            geometry = shapely.wkt.loads(wkt)
+            row["geojson"] = geojson.Feature(geometry=geometry)
             del row["geojson"]["properties"]
 
-        if not row.get("geojson", ""):
-            if row.get("point", ""):
-                wkt = shapely.wkt.loads(row["point"])
-                row["geojson"] = geojson.Feature(geometry=wkt)
-                del row["geojson"]["properties"]
+            if not row.get("latitude", ""):
+                geometry = geometry.centroid
+                row["longitude"] = "%.6f" % round(Decimal(geometry.x), 6)
+                row["latitude"] = "%.6f" % round(Decimal(geometry.y), 6)
 
-        e.writerow(row)
-        g.writerow(row)
+            if not row.get("point", ""):
+                row["point"] = "POINT(%s %s)" % (row["longitude"], row["latitude"])
+
+            g.writerow(row)
