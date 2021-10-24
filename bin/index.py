@@ -15,14 +15,11 @@ from shapely.geometry import MultiPolygon
 from decimal import Decimal
 
 
-def properties(row, fields):
-    return {
-        field: row[field]
-        for field in row
-        if row[field]
-        and field
-        not in ["geography", "geometry", "organisation", "point", "slug"] + fields
-    }
+def curie(value):
+    s = value.split(":", 2)
+    if len(s) == 2:
+        return s
+    return ["", value]
 
 
 organisations = {}
@@ -56,31 +53,78 @@ r.writeheader()
 
 
 for path in glob.glob("var/dataset/*.csv"):
-    dataset = Path(path).stem
+    _dataset = Path(path).stem
     for row in csv.DictReader(open(path)):
+
+        # default the dataset
+        dataset = row.get("dataset", "") or _dataset
+
+        if not row.get("dataset", ""):
+            row["dataset"] = dataset
+
+        schema = dataset
+        key_field = specification.key_field(schema) or schema
+
+        # default the typeology from the dataset
+        typology = row.get("typology", "")
+        if not typology:
+            typology = specification.field_typology(key_field)
+            row["typology"] = typology
+
+        # default the CURIE
+        prefix = row.get("prefix", "")
+        reference = row.get("reference", "")
+        key_value = row.get(key_field, "")
+        typology_value = row.get(typology, "")
+
+        reference_prefix, reference_reference = curie(reference)
+        typology_prefix, typology_reference = curie(typology_value)
+        key_prefix, key_reference = curie(key_value)
+        spec_prefix = specification.dataset[dataset].get("prefix", "")
+
+        row["prefix"] = (
+            prefix
+            or reference_prefix
+            or typology_prefix
+            or key_prefix
+            or spec_prefix
+            or dataset
+        )
+        row["reference"] = reference_reference or typology_reference or key_reference
+
+        if not row["reference"]:
+            print(row)
+
+        # the legal entity responsible for managing creating or managing this entity
         if row.get("organisation", ""):
             row["organisation-entity"] = organisations[row["organisation"]]["entity"]
 
-        row.setdefault("dataset", dataset)
-
-        if not row.get("reference", ""):
-            if row.get("geography", ""):
-                row["reference"] = row["geography"].split(":")[1]
-            elif row.get(dataset, ""):
-                row["reference"] = row[dataset]
-                del row[dataset]
-
-        if not row.get("typology", ""):
-            row["typology"] = specification.field_typology(row["dataset"])
-
+        # add other fields as JSON properties
         if not row.get("json", ""):
-            row["json"] = json.dumps(properties(row, entity_fields))
+            properties = {
+                field: row[field]
+                for field in row
+                if row[field]
+                and field
+                not in [
+                    "geography",
+                    "geometry",
+                    "organisation",
+                    typology,
+                    dataset,
+                    "point",
+                    "slug",
+                ]
+                + entity_fields
+            }
+            row["json"] = json.dumps(properties)
             if row["json"] == {}:
                 del row["json"]
 
         e.writerow(row)
 
         # write geometry
+        # defaulting point from the shape centroid should probaby be in the pipeline
         shape = row.get("geometry", "")
         point = row.get("point", "")
         wkt = shape or point

@@ -16,7 +16,7 @@ $(DB):	bin/load.py dataset/entity.csv
 	@mkdir -p dataset/
 	python3 bin/load.py $@
 
-datasette:	$(DB)
+datasette:
 	datasette serve $(DB) \
 	--setting sql_time_limit_ms 5000 \
 	--load-extension $(SPATIALITE_EXTENSION) \
@@ -31,5 +31,5 @@ clean::
 clobber::
 	rm -rf dataset/
 
-var/dataset/organisation.csv:
+var/dataset/organisation.csv: bin/organisation.py
 	python3 bin/organisation.py > $@
