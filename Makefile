@@ -8,6 +8,7 @@ DB=dataset/entity.sqlite3
 first-pass:: $(DB)
 
 dataset/entity.csv: bin/index.py var/dataset/organisation.csv
+	@mkdir -p var/dataset/
 	bin/download.sh
 	@mkdir -p dataset/
 	python3 bin/index.py
@@ -32,5 +33,5 @@ clobber::
 	rm -rf dataset/
 
 var/dataset/organisation.csv: bin/organisation.py
-	@mkdir -p dataset/
+	@mkdir -p var/dataset/
 	python3 bin/organisation.py > $@
