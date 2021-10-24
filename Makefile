@@ -32,4 +32,5 @@ clobber::
 	rm -rf dataset/
 
 var/dataset/organisation.csv: bin/organisation.py
+	@mkdir -p dataset/
 	python3 bin/organisation.py > $@
