@@ -16,6 +16,10 @@ do
     # https://collection-dataset.s3.eu-west-2.amazonaws.com/{COLLECTION}-collection/issue/{DATASET}/{DATASET}.sqlite3
     case "$collection" in
     ""|organisation) continue ;;
+
+    # skip trees for now ..
+    tree*) continue ;;
+
     #|national-park-authority|local-authority-eng|government-organisation|development-corporation|organisation|geography) continue ;;
     #battlefield|building-preservation-notice|certificate-of-immunity|heritage-at-risk|listed-building-grade) collection=historic-england ;;
     esac
