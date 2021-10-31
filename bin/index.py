@@ -99,6 +99,10 @@ for path in glob.glob("var/dataset/*.csv"):
         if row.get("organisation", ""):
             row["organisation-entity"] = organisations[row["organisation"]]["entity"]
 
+        # migrate wikipedia URLs to a reference compatible with dbpedia CURIEs with a wikipedia-en prefix
+        if row.get("wikipedia", ""):
+            row["wikipedia"] = row["wikipedia"].replace("https://en.wikipedia.org/wiki/", "")
+
         # add other fields as JSON properties
         if not row.get("json", ""):
             properties = {
