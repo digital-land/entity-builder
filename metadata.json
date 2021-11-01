@@ -4,7 +4,7 @@
             "host_wildcards": ["*"]
         },
         "datasette-leaflet-geojson": {
-            "default_maps_to_load": 20
+            "default_maps_to_load": 2
         }
     }
 }
