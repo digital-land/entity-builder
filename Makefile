@@ -39,3 +39,5 @@ var/dataset/organisation.csv: bin/organisation.py
 aws-build::
 	aws batch submit-job --job-name entity-db-$(shell date '+%Y-%m-%d-%H-%M-%S') --job-queue dl-batch-queue --job-definition dl-batch-def --container-overrides '{"environment": [{"name":"BATCH_FILE_S3_URL","value":"s3://dl-batch-scripts/builder_run.sh"}, {"name" : "BUILDER_REPO","value" : "entity-builder"}]}'
 
+push-dataset::
+	aws s3 sync dataset s3://digital-land-collection
