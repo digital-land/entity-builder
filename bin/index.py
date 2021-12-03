@@ -54,10 +54,12 @@ r.writeheader()
 
 for path in glob.glob("var/dataset/*.csv"):
     _dataset = Path(path).stem
+    row_number = 0
     for row in csv.DictReader(open(path)):
 
         # default the dataset
         dataset = row.get("dataset", "") or _dataset
+        row_number += 1
 
         if not row.get("dataset", ""):
             row["dataset"] = dataset
@@ -92,8 +94,12 @@ for path in glob.glob("var/dataset/*.csv"):
         )
         row["reference"] = reference_reference or typology_reference or key_reference
 
+        if not row["entity"]:
+            print("%s row %d: missing entity, skipping" % (_dataset, row_number))
+            continue
+
         if not row["reference"]:
-            print(row)
+            print("%s row %d: missing reference" % (_dataset, row_number))
 
         # the legal entity responsible for managing creating or managing this entity
         if row.get("organisation", ""):
