@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e
-
 s3="https://collection-dataset.s3.eu-west-2.amazonaws.com/"
 
 dir=var/dataset/
