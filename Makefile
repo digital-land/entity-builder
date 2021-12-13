@@ -4,8 +4,9 @@ include makerules/datapackage.mk
 include makerules/development.mk
 
 DB=dataset/entity.sqlite3
+DB_SUM=dataset/entity.sqlite3.md5sum
 
-first-pass:: $(DB)
+first-pass:: $(DB) $(DB_SUM)
 
 dataset/entity.csv: bin/index.py var/dataset/organisation.csv
 	@mkdir -p var/dataset/
@@ -16,7 +17,9 @@ dataset/entity.csv: bin/index.py var/dataset/organisation.csv
 $(DB):	bin/load.py dataset/entity.csv
 	@mkdir -p dataset/
 	python3 bin/load.py $@
-	md5sum $@
+
+$(DB_SUM): $(DB)
+	md5sum $(DB) | tee $(DB_SUM)
 
 datasette:
 	datasette serve $(DB) \
