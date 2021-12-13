@@ -16,6 +16,7 @@ dataset/entity.csv: bin/index.py var/dataset/organisation.csv
 $(DB):	bin/load.py dataset/entity.csv
 	@mkdir -p dataset/
 	python3 bin/load.py $@
+	md5sum $@
 
 datasette:
 	datasette serve $(DB) \
