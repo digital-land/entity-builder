@@ -12,6 +12,7 @@ from digital_land.package.sqlite import SqlitePackage
 
 
 tables = {
+    "checksum": "dataset",
     "entity": "dataset",
     "geometry": "dataset",
     "old-entity": "dataset",

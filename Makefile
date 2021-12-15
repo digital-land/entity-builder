@@ -6,7 +6,7 @@ include makerules/development.mk
 DB=dataset/entity.sqlite3
 DB_SUM=dataset/entity.sqlite3.md5sum
 
-first-pass:: $(DB) $(DB_SUM)
+first-pass:: $(DB_SUM)
 
 dataset/entity.csv: bin/index.py var/dataset/organisation.csv
 	@mkdir -p var/dataset/
@@ -14,7 +14,10 @@ dataset/entity.csv: bin/index.py var/dataset/organisation.csv
 	@mkdir -p dataset/
 	python3 bin/index.py
 
-$(DB):	bin/load.py dataset/entity.csv
+dataset/checksum.csv: bin/checksum.sh dataset/entity.csv
+	bin/checksum.sh > $@
+
+$(DB):	bin/load.py dataset/entity.csv dataset/checksum.csv
 	@mkdir -p dataset/
 	python3 bin/load.py $@
 
