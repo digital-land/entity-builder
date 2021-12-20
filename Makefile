@@ -13,6 +13,7 @@ dataset/entity.csv: bin/index.py var/dataset/organisation.csv
 	bin/download.sh
 	@mkdir -p dataset/
 	python3 bin/index.py
+	echo 'select count(*) from entity where dataset = "tree";' | sqlite3 dataset/entity.sqlite3
 
 dataset/checksum.csv: bin/checksum.sh dataset/entity.csv
 	bin/checksum.sh > $@
