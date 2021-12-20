@@ -13,7 +13,6 @@ dataset/entity.csv: bin/index.py var/dataset/organisation.csv
 	bin/download.sh
 	@mkdir -p dataset/
 	python3 bin/index.py
-	echo 'select count(*) from entity where dataset = "tree";' | sqlite3 dataset/entity.sqlite3
 
 dataset/checksum.csv: bin/checksum.sh dataset/entity.csv
 	bin/checksum.sh > $@
@@ -21,6 +20,7 @@ dataset/checksum.csv: bin/checksum.sh dataset/entity.csv
 $(DB):	bin/load.py dataset/entity.csv dataset/checksum.csv
 	@mkdir -p dataset/
 	python3 bin/load.py $@
+	echo 'select count(*) from entity where dataset = "tree";' | sqlite3 $@
 
 $(DB_SUM): $(DB)
 	md5sum $(DB) | tee $(DB_SUM)
@@ -33,6 +33,8 @@ datasette:
 
 init::
 	datasette install datasette-leaflet-geojson
+	sqlite3 --version
+	-ls -l /usr/lib/x86_64-linux-gnu/*spatialite*
 
 clean::
 	rm -rf ./var
