@@ -20,7 +20,7 @@ tables = {
 
 
 indexes = {
-    "entity": ["entity", "typology", "dataset", "reference", "organisation-entity", "json"],
+    "entity": ["entity", "typology", "prefix", "dataset", "reference", "organisation-entity", "json", "start-date", "entry-date", "name"],
     "geometry": ["entity", "geometry-geom", "point-geom"],
     "old-entity": ["entity", "old-entity", "status"],
 }
