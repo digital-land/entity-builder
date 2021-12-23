@@ -36,11 +36,6 @@ e = csv.DictWriter(
     fieldnames=entity_fields,
     extrasaction="ignore",
 )
-g = csv.DictWriter(
-    open("dataset/geometry.csv", "w", newline=""),
-    fieldnames=geometry_fields,
-    extrasaction="ignore",
-)
 r = csv.DictWriter(
     open("dataset/old-entity.csv", "w", newline=""),
     fieldnames=old_entity_fields,
@@ -48,7 +43,6 @@ r = csv.DictWriter(
 )
 
 e.writeheader()
-g.writeheader()
 r.writeheader()
 
 
@@ -131,9 +125,7 @@ for path in glob.glob("var/dataset/*.csv"):
             if row["json"] == {}:
                 del row["json"]
 
-        e.writerow(row)
-
-        # write geometry
+        # add geometry
         # defaulting point from the shape centroid should probaby be in the pipeline
         shape = row.get("geometry", "")
         point = row.get("point", "")
@@ -152,4 +144,4 @@ for path in glob.glob("var/dataset/*.csv"):
             if not row.get("point", ""):
                 row["point"] = "POINT(%s %s)" % (row["longitude"], row["latitude"])
 
-            g.writerow(row)
+        e.writerow(row)

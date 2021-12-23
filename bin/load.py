@@ -14,14 +14,12 @@ from digital_land.package.sqlite import SqlitePackage
 tables = {
     "checksum": "dataset",
     "entity": "dataset",
-    "geometry": "dataset",
     "old-entity": "dataset",
 }
 
 
 indexes = {
-    "entity": ["entity", "typology", "prefix", "dataset", "reference", "organisation-entity", "json", "start-date", "entry-date", "name"],
-    "geometry": ["entity", "geometry-geom", "point-geom"],
+    "entity": ["entity", "typology", "prefix", "dataset", "reference", "organisation-entity", "json", "start-date", "entry-date", "name", "geometry-geom", "point-geom"],
     "old-entity": ["entity", "old-entity", "status"],
 }
 
