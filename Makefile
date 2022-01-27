@@ -25,12 +25,6 @@ $(DB):	bin/load.py dataset/entity.csv dataset/checksum.csv
 $(DB_SUM): $(DB)
 	md5sum $(DB) | tee $(DB_SUM)
 
-datasette:
-	datasette serve $(DB) \
-	--setting sql_time_limit_ms 5000 \
-	--load-extension $(SPATIALITE_EXTENSION) \
-	--metadata metadata.json
-
 init::
 	datasette install datasette-leaflet-geojson
 	sqlite3 --version
