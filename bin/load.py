@@ -42,6 +42,6 @@ if __name__ == "__main__":
     level = logging.INFO
     logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s")
 
-    package = SqlitePackage("entity", tables=tables, indexes=indexes)
+    package = SqlitePackage("entity", path=sys.argv[1], tables=tables, indexes=indexes)
     package.spatialite()
-    package.create(sys.argv[1])
+    package.create()
