@@ -16,6 +16,8 @@ from decimal import Decimal
 
 
 def curie(value):
+    if not value:
+        return ["", ""]
     s = value.split(":", 2)
     if len(s) == 2:
         return s
@@ -58,32 +60,32 @@ for path in glob.glob("var/dataset/*.csv"):
         if not row.get("dataset", ""):
             row["dataset"] = dataset
 
-        schema = dataset
-        key_field = specification.key_field(schema) or schema
+        # the legal entity responsible for managing creating or managing this entity
+        if not row.get("organisation-entity", ""):
+            if row.get("organisation", ""):
+                row["organisation-entity"] = organisations[row["organisation"]]["entity"]
 
         # default the typeology from the dataset
         typology = row.get("typology", "")
         if not typology:
-            typology = specification.field_typology(key_field)
+            typology = specification.field_typology(dataset)
             row["typology"] = typology
 
         # default the CURIE
         prefix = row.get("prefix", "")
-        reference = row.get("reference", "")
-        key_value = row.get(key_field, "")
+        reference = row.get("reference", "") or row.get(dataset, "") or row.get("site", "")
+        key_value = row.get(dataset, "")
         typology_value = row.get(typology, "")
 
         reference_prefix, reference_reference = curie(reference)
         typology_prefix, typology_reference = curie(typology_value)
         key_prefix, key_reference = curie(key_value)
-        spec_prefix = specification.dataset[dataset].get("prefix", "")
 
         row["prefix"] = (
             prefix
             or reference_prefix
             or typology_prefix
             or key_prefix
-            or spec_prefix
             or dataset
         )
         row["reference"] = reference_reference or typology_reference or key_reference
@@ -94,10 +96,6 @@ for path in glob.glob("var/dataset/*.csv"):
 
         if not row["reference"]:
             print("%s row %d: missing reference" % (_dataset, row_number))
-
-        # the legal entity responsible for managing creating or managing this entity
-        if row.get("organisation", ""):
-            row["organisation-entity"] = organisations[row["organisation"]]["entity"]
 
         # migrate wikipedia URLs to a reference compatible with dbpedia CURIEs with a wikipedia-en prefix
         if row.get("wikipedia", ""):
