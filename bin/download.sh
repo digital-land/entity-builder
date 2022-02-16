@@ -2,7 +2,7 @@
 
 set -e
 
-s3="https://collection-dataset.s3.eu-west-2.amazonaws.com/"
+s3="https://digital-land-production-collection-dataset.s3.eu-west-2.amazonaws.com/"
 
 dir=var/dataset/
 mkdir -p $dir
@@ -13,7 +13,7 @@ csvcut -c dataset,collection specification/dataset.csv |
     while read dataset collection
 do
     # current s3 structure has collection, but should be flattend
-    # https://collection-dataset.s3.eu-west-2.amazonaws.com/{COLLECTION}-collection/issue/{DATASET}/{DATASET}.sqlite3
+    # https://*-collection-dataset.s3.eu-west-2.amazonaws.com/{COLLECTION}-collection/issue/{DATASET}/{DATASET}.sqlite3
     case "$collection" in
     ""|organisation) continue ;;
     esac
