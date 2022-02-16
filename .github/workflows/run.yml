@@ -1,7 +1,7 @@
 name: Build entity database
 on:
   schedule:
-  - cron: 0 4 * * *
+  - cron: 45 4 * * *
   workflow_dispatch:
 env:
   DLB_BOT_EMAIL: ${{ secrets.DLB_BOT_EMAIL }}
@@ -15,6 +15,11 @@ jobs:
     - uses: actions/setup-python@v2
       with:
         python-version: 3.8
+    - name: Install spatialite
+      run: |
+        sudo apt-get update
+        sudo apt-get install sqlite3 libsqlite3-mod-spatialite
+        sudo dpkg -L libsqlite3-mod-spatialite
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -33,5 +38,15 @@ jobs:
         git checkout ${GITHUB_REF##*/}
 
         '
-    - name: Submit build job on AWS Batch
-      run:  make aws-build
+    - name: Update makerules
+      run: make makerules
+    - name: Commit updated makerules
+      run: make commit-makerules
+    - name: Install dependencies
+      run: make init
+    - name: Clobber dataset
+      run: make clobber
+    - name: Build dataset
+      run: make
+    - name: Push dataset files to S3
+      run: make push-dataset-s3

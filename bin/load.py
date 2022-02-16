@@ -12,15 +12,27 @@ from digital_land.package.sqlite import SqlitePackage
 
 
 tables = {
+    "checksum": "dataset",
     "entity": "dataset",
-    "geometry": "dataset",
     "old-entity": "dataset",
 }
 
 
 indexes = {
-    "entity": ["entity", "typology", "dataset", "reference", "organisation-entity", "json"],
-    "geometry": ["entity", "geometry-geom", "point-geom"],
+    "entity": [
+        "entity",
+        "typology",
+        "prefix",
+        "dataset",
+        "reference",
+        "organisation-entity",
+        "json",
+        "start-date",
+        "entry-date",
+        "name",
+        "geometry-geom",
+        "point-geom",
+    ],
     "old-entity": ["entity", "old-entity", "status"],
 }
 
@@ -30,6 +42,6 @@ if __name__ == "__main__":
     level = logging.INFO
     logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s")
 
-    package = SqlitePackage("entity", tables=tables, indexes=indexes)
+    package = SqlitePackage("entity", path=sys.argv[1], tables=tables, indexes=indexes)
     package.spatialite()
-    package.create(sys.argv[1])
+    package.create()

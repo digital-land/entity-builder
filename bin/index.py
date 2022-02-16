@@ -16,6 +16,8 @@ from decimal import Decimal
 
 
 def curie(value):
+    if not value:
+        return ["", ""]
     s = value.split(":", 2)
     if len(s) == 2:
         return s
@@ -36,11 +38,6 @@ e = csv.DictWriter(
     fieldnames=entity_fields,
     extrasaction="ignore",
 )
-g = csv.DictWriter(
-    open("dataset/geometry.csv", "w", newline=""),
-    fieldnames=geometry_fields,
-    extrasaction="ignore",
-)
 r = csv.DictWriter(
     open("dataset/old-entity.csv", "w", newline=""),
     fieldnames=old_entity_fields,
@@ -48,60 +45,63 @@ r = csv.DictWriter(
 )
 
 e.writeheader()
-g.writeheader()
 r.writeheader()
 
 
 for path in glob.glob("var/dataset/*.csv"):
     _dataset = Path(path).stem
+    row_number = 0
     for row in csv.DictReader(open(path)):
 
         # default the dataset
         dataset = row.get("dataset", "") or _dataset
+        row_number += 1
 
         if not row.get("dataset", ""):
             row["dataset"] = dataset
 
-        schema = dataset
-        key_field = specification.key_field(schema) or schema
+        # the legal entity responsible for managing creating or managing this entity
+        if not row.get("organisation-entity", ""):
+            if row.get("organisation", ""):
+                row["organisation-entity"] = organisations[row["organisation"]]["entity"]
 
         # default the typeology from the dataset
         typology = row.get("typology", "")
         if not typology:
-            typology = specification.field_typology(key_field)
+            typology = specification.field_typology(dataset)
             row["typology"] = typology
 
         # default the CURIE
         prefix = row.get("prefix", "")
-        reference = row.get("reference", "")
-        key_value = row.get(key_field, "")
+        reference = row.get("reference", "") or row.get(dataset, "") or row.get("site", "")
+        key_value = row.get(dataset, "")
         typology_value = row.get(typology, "")
 
         reference_prefix, reference_reference = curie(reference)
         typology_prefix, typology_reference = curie(typology_value)
         key_prefix, key_reference = curie(key_value)
-        spec_prefix = specification.dataset[dataset].get("prefix", "")
 
         row["prefix"] = (
             prefix
             or reference_prefix
             or typology_prefix
             or key_prefix
-            or spec_prefix
             or dataset
         )
         row["reference"] = reference_reference or typology_reference or key_reference
 
-        if not row["reference"]:
-            print(row)
+        if not row["entity"]:
+            print("%s row %d: missing entity, skipping" % (_dataset, row_number))
+            continue
 
-        # the legal entity responsible for managing creating or managing this entity
-        if row.get("organisation", ""):
-            row["organisation-entity"] = organisations[row["organisation"]]["entity"]
+        if not row["reference"]:
+            print("%s row %d: missing reference" % (_dataset, row_number))
 
         # migrate wikipedia URLs to a reference compatible with dbpedia CURIEs with a wikipedia-en prefix
         if row.get("wikipedia", ""):
-            row["wikipedia"] = row["wikipedia"].replace("https://en.wikipedia.org/wiki/", "")
+            row["wikipedia"] = row["wikipedia"].replace(
+                "https://en.wikipedia.org/wiki/", ""
+            )
 
         # add other fields as JSON properties
         if not row.get("json", ""):
@@ -125,9 +125,7 @@ for path in glob.glob("var/dataset/*.csv"):
             if row["json"] == {}:
                 del row["json"]
 
-        e.writerow(row)
-
-        # write geometry
+        # add geometry
         # defaulting point from the shape centroid should probaby be in the pipeline
         shape = row.get("geometry", "")
         point = row.get("point", "")
@@ -146,4 +144,4 @@ for path in glob.glob("var/dataset/*.csv"):
             if not row.get("point", ""):
                 row["point"] = "POINT(%s %s)" % (row["longitude"], row["latitude"])
 
-            g.writerow(row)
+        e.writerow(row)
