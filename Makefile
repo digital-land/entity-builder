@@ -20,7 +20,6 @@ dataset/checksum.csv: bin/checksum.sh dataset/entity.csv
 $(DB):	bin/load.py dataset/entity.csv dataset/checksum.csv
 	@mkdir -p dataset/
 	python3 bin/load.py $@
-	echo 'select count(*) from entity where dataset = "tree";' | sqlite3 $@
 
 $(DB_SUM): $(DB)
 	md5sum $(DB) | tee $(DB_SUM)
