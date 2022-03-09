@@ -24,6 +24,7 @@ def curie(value):
     return ["", value]
 
 
+
 organisations = {}
 for row in csv.DictReader(open("var/cache/organisation.csv")):
     organisations[row["organisation"]] = row
@@ -52,6 +53,10 @@ for path in glob.glob("var/dataset/*.csv"):
     _dataset = Path(path).stem
     row_number = 0
     for row in csv.DictReader(open(path)):
+
+        # handle start_date and start-date columns .. 
+        for col in ["start-date", "end-date", "entry-date", "organisation-entity"]:
+            row[col] = row.get(col, "") or row.get(col.replace("-", "_"), "")
 
         # default the dataset
         dataset = row.get("dataset", "") or _dataset
@@ -114,6 +119,7 @@ for path in glob.glob("var/dataset/*.csv"):
                     "geography",
                     "geometry",
                     "organisation",
+                    "organisation-entity",
                     typology,
                     dataset,
                     "point",
