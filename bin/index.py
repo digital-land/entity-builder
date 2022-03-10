@@ -114,6 +114,7 @@ for path in glob.glob("var/dataset/*.csv"):
                 field: row[field]
                 for field in row
                 if row[field]
+                and "_" not in field
                 and field
                 not in [
                     "geography",
