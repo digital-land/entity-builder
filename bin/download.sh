@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+#set -e
 
 s3="https://digital-land-production-collection-dataset.s3.eu-west-2.amazonaws.com/"
 
