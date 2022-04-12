@@ -25,12 +25,12 @@ do
         set +x
     fi
     # Download old entity files, which may or may not exist
-    url=$s3$collection-collection/dataset/$dataset-old-entity.csv
-    path=$dir$dataset-old-entity.csv
+    oe_url=https://raw.githubusercontent.com/digital-land/$collection-collection/main/pipeline/old-entity.csv
+    oe_path=$dir$collection-old-entity.csv
 
-    if [ ! -f $path ] ; then
+    if [ ! -f $oe_path ] ; then
         set -x
-        curl -qsfL -o $path "$url"
+        curl -qsfL -o $oe_path "$oe_url"
         set +x
     fi
 done < <(csvcut -c dataset,collection specification/dataset.csv | tail -n +2)

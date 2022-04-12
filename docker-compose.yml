@@ -3,5 +3,5 @@ services:
   builder:
     build: .
     volumes:
-      - ./var:/src/var
+      - ./var/dataset:/src/var/dataset
       - ./dataset:/src/dataset
