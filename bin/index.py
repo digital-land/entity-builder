@@ -2,17 +2,20 @@
 
 # index entity data
 
-import os
-import sys
 import csv
+from decimal import Decimal
+import logging
 import json
 import glob
 from pathlib import Path
-from digital_land.specification import Specification
+
 import geojson
 import shapely.wkt
-from shapely.geometry import MultiPolygon
-from decimal import Decimal
+
+from digital_land.specification import Specification
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 def curie(value):
@@ -22,7 +25,6 @@ def curie(value):
     if len(s) == 2:
         return s
     return ["", value]
-
 
 
 organisations = {}
@@ -49,12 +51,13 @@ e.writeheader()
 r.writeheader()
 
 
-for path in glob.glob("var/dataset/*.csv"):
+def index_entity_csv(path):
+    logging.info(f"Processing {path} as entity csv")
     _dataset = Path(path).stem
     row_number = 0
     for row in csv.DictReader(open(path)):
 
-        # handle start_date and start-date columns .. 
+        # handle start_date and start-date columns ..
         for col in ["start-date", "end-date", "entry-date", "organisation-entity"]:
             row[col] = row.get(col, "") or row.get(col.replace("-", "_"), "")
 
@@ -152,3 +155,16 @@ for path in glob.glob("var/dataset/*.csv"):
                 row["point"] = "POINT(%s %s)" % (row["longitude"], row["latitude"])
 
         e.writerow(row)
+
+
+def index_old_entity_csv(path: str):
+    logging.info(f"Processing {path} as old-entity csv")
+    for row in csv.DictReader(open(path)):
+        r.writerow(row)
+
+
+for path in glob.glob("var/dataset/*.csv"):
+    if path[-14:] != 'old-entity.csv':
+        index_entity_csv(path)
+    else:
+        index_old_entity_csv(path)

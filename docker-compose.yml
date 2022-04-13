@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+  builder:
+    build: .
+    volumes:
+      - ./var/dataset:/src/var/dataset
+      - ./dataset:/src/dataset

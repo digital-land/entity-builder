@@ -3,11 +3,9 @@
 # create a spatialite database for searching and presenting entities
 # the geometry table could be moved to a separate database including tiles
 
-import os
 import sys
-import csv
-import json
 import logging
+
 from digital_land.package.sqlite import SqlitePackage
 
 
