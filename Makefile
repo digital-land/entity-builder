@@ -8,7 +8,7 @@ DB_SUM=dataset/entity.sqlite3.md5sum
 
 first-pass:: $(DB_SUM)
 
-dataset/entity.csv: bin/index.py var/dataset/organisation.csv
+dataset/entity.csv: bin/index.py var/cache/organisation.csv
 	@mkdir -p var/dataset/
 	bin/download.sh
 	@mkdir -p dataset/
@@ -34,10 +34,6 @@ clean::
 
 clobber::
 	rm -rf dataset/
-
-var/dataset/organisation.csv: bin/organisation.py
-	@mkdir -p var/dataset/
-	python3 bin/organisation.py > $@
 
 aws-build::
 	aws batch submit-job --job-name entity-db-$(shell date '+%Y-%m-%d-%H-%M-%S') --job-queue dl-batch-queue --job-definition dl-batch-def --container-overrides '{"environment": [{"name":"BATCH_FILE_URL","value":"https://raw.githubusercontent.com/digital-land/docker-builds/main/builder_run.sh"}, {"name" : "REPOSITORY","value" : "entity-builder"}]}'
