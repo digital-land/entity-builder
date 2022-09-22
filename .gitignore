@@ -25,3 +25,8 @@ dataset/
 # ignore databases
 *.db
 *.sqlite3
+/.python-version
+
+# ide ignores
+.idea
+.code
