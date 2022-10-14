@@ -22,19 +22,12 @@ jobs:
         sudo apt-get install sqlite3 libsqlite3-mod-spatialite
         sudo dpkg -L libsqlite3-mod-spatialite
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
-        aws-secret-access-key: ${{secrets.AWS_S3_SECRET_ACCESS_KEY}}
-        aws-region: eu-west-2
-
     - name: Configure git
       run: |
         git config user.email "${DLB_BOT_EMAIL}"
         git config user.name "${DLB_BOT_USERNAME}"
         git remote set-url origin https://${DLB_BOT_USERNAME}:${DLB_BOT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-        git checkout ${GITHUB_REF##*/}
+        git checkout ${GITHUB_REF_NAME}
 
     - name: Update makerules
       run: make makerules
@@ -51,5 +44,57 @@ jobs:
     - name: Build dataset
       run: make
 
+    - name: Configure Dev AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
+        aws-secret-access-key: ${{secrets.AWS_S3_SECRET_ACCESS_KEY}}
+        aws-region: eu-west-2
+
     - name: Save datasets to S3
       run: make save-dataset
+    
+    - name: Configure Production AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{secrets.TEMPORARY_PROD_AWS_ACCESS_KEY_ID}}
+        aws-secret-access-key: ${{secrets.TEMPORARY_PROD_AWS_ACCESS_SECRET}}
+        aws-region: eu-west-2
+
+check-entity-builder-errors:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    if: always() && contains(join(needs.*.result, ','), 'failure')
+    steps:
+      - name: send failure notification
+        uses: slackapi/slack-github-action@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'dl-developers'
+          payload: |
+            {
+              "text": "Entity Builder Has Failed",
+              "icon_emoji": ":warning:",
+              "username": "CollectionRunner",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Entity Builder Has Failed"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The report is available on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
+                  }
+                }
+              ]
+            }
