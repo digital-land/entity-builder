@@ -67,7 +67,7 @@ jobs:
         HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.TEMPORARY_DATA_S3_BUCKET}}
       run: make save-dataset
 
-check-entity-builder-errors:
+  check-entity-builder-errors:
     runs-on: ubuntu-latest
     needs:
       - build
