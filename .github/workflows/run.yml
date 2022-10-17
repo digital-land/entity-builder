@@ -51,7 +51,7 @@ jobs:
         aws-secret-access-key: ${{secrets.AWS_S3_SECRET_ACCESS_KEY}}
         aws-region: eu-west-2
 
-    - name: Save datasets to S3
+    - name: Save datasets to Dev S3
       run: make save-dataset
     
     - name: Configure Production AWS Credentials
@@ -60,6 +60,12 @@ jobs:
         aws-access-key-id: ${{secrets.TEMPORARY_PROD_AWS_ACCESS_KEY_ID}}
         aws-secret-access-key: ${{secrets.TEMPORARY_PROD_AWS_ACCESS_SECRET}}
         aws-region: eu-west-2
+    
+    - name: Save datasets to Prod S3
+      env:
+        COLLECTION_DATASET_BUCKET_NAME: ${{secrets.TEMPORARY_DATA_S3_BUCKET}}
+        HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.TEMPORARY_DATA_S3_BUCKET}}
+      run: make save-dataset
 
 check-entity-builder-errors:
     runs-on: ubuntu-latest
