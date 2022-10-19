@@ -34,7 +34,3 @@ clean::
 
 clobber::
 	rm -rf dataset/
-
-aws-build::
-	aws batch submit-job --job-name entity-db-$(shell date '+%Y-%m-%d-%H-%M-%S') --job-queue dl-batch-queue --job-definition dl-batch-def --container-overrides '{"environment": [{"name":"BATCH_FILE_URL","value":"https://raw.githubusercontent.com/digital-land/docker-builds/main/builder_run.sh"}, {"name" : "REPOSITORY","value" : "entity-builder"}]}'
-
