@@ -54,17 +54,30 @@ jobs:
     - name: Save datasets to Dev S3
       run: make save-dataset
     
-    - name: Configure Production AWS Credentials
+    - name: Configure Temporary Production AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{secrets.TEMPORARY_PROD_AWS_ACCESS_KEY_ID}}
         aws-secret-access-key: ${{secrets.TEMPORARY_PROD_AWS_ACCESS_SECRET}}
         aws-region: eu-west-2
     
-    - name: Save datasets to Prod S3
+    - name: Save datasets to Temporary Prod S3
       env:
         COLLECTION_DATASET_BUCKET_NAME: ${{secrets.TEMPORARY_DATA_S3_BUCKET}}
         HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.TEMPORARY_DATA_S3_BUCKET}}
+      run: make save-dataset
+    
+    - name: Configure Production AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{secrets.PROD_AWS_ACCESS_KEY_ID}}
+        aws-secret-access-key: ${{secrets.PROD_AWS_ACCESS_SECRET}}
+        aws-region: eu-west-2
+    
+    - name: Save datasets to Prod S3
+      env:
+        COLLECTION_DATASET_BUCKET_NAME: ${{secrets.PRODUCTION_DATA_S3_BUCKET}}
+        HOISTED_COLLECTION_DATASET_BUCKET_NAME: ${{secrets.PRODUCTION_DATA_S3_BUCKET}}
       run: make save-dataset
 
   check-entity-builder-errors:
