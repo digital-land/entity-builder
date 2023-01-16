@@ -2,7 +2,7 @@
 
 #set -e
 
-s3="https://digital-land-production-collection-dataset.s3.eu-west-2.amazonaws.com/"
+s3="https://files.planning.data.gov.uk/"
 
 dir=var/dataset/
 mkdir -p $dir
