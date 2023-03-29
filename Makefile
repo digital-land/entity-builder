@@ -1,5 +1,4 @@
 include makerules/makerules.mk
-include makerules/pipeline.mk
 include makerules/datapackage.mk
 include makerules/development.mk
 
@@ -23,6 +22,8 @@ $(DB):	bin/load.py dataset/entity.csv dataset/checksum.csv
 
 $(DB_SUM): $(DB)
 	md5sum $(DB) | tee $(DB_SUM)
+
+init::	$(CACHE_DIR)organisation.csv
 
 init::
 	datasette install datasette-leaflet-geojson
