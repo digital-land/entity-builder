@@ -1,4 +1,9 @@
+# prevent attempt to download centralised config
+PIPELINE_CONFIG_FILES=.dummy
+init::; touch .dummy
+
 include makerules/makerules.mk
+include makerules/pipeline.mk
 include makerules/datapackage.mk
 include makerules/development.mk
 
@@ -23,13 +28,13 @@ $(DB):	bin/load.py dataset/entity.csv dataset/checksum.csv
 $(DB_SUM): $(DB)
 	md5sum $(DB) | tee $(DB_SUM)
 
-init::	$(CACHE_DIR)organisation.csv
-
 init::
 	datasette install datasette-leaflet-geojson
 	sqlite3 --version
 	-ls -l /usr/lib/x86_64-linux-gnu/*spatialite*
 
+init::	$(CACHE_DIR)organisation.csv
+	#
 clean::
 	rm -rf ./var
 

@@ -30,3 +30,4 @@ dataset/
 # ide ignores
 .idea
 .code
+.dummy
