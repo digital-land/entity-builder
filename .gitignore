@@ -31,3 +31,33 @@ dataset/
 .idea
 .code
 .dummy
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+.ipynb_checkpoints/
+.venv
+.cache
+.dummy
+
+*.swp
+
+tmp/
+
+# ignore local packages
+*.egg-info/
+
+# ignore intermediate files
+var/
+
+# ignore updated specification files
+specification/
+
+# ignore generated dataset files
+collection/
+pipeline/
+dataset/
+
+# ignore databases
+*.db
+*.sqlite3
