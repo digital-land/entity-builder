@@ -33,7 +33,6 @@ for row in csv.DictReader(open("var/cache/organisation.csv")):
 
 specification = Specification()
 entity_fields = specification.schema_field["entity"]
-geometry_fields = specification.schema_field["geometry"]
 old_entity_fields = specification.schema_field["old-entity"]
 
 e = csv.DictWriter(
