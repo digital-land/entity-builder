@@ -11,6 +11,7 @@ from pathlib import Path
 
 import geojson
 import shapely.wkt
+from shapely.errors import WKTReadingError
 
 from digital_land.specification import Specification
 
@@ -97,12 +98,13 @@ def index_entity_csv(path):
         )
         row["reference"] = reference_reference or typology_reference or key_reference
 
-        if not row["entity"]:
-            print("%s row %d: missing entity, skipping" % (_dataset, row_number))
+        entity = row["entity"]
+        if not entity:
+            logging.warning(f"{_dataset} row {row_number}: missing entity, skipping")
             continue
 
         if not row["reference"]:
-            print("%s row %d: missing reference" % (_dataset, row_number))
+            logging.warning(f"{_dataset} row {row_number}: missing reference")
 
         # migrate wikipedia URLs to a reference compatible with dbpedia CURIEs with a wikipedia-en prefix
         if row.get("wikipedia", ""):
@@ -141,17 +143,21 @@ def index_entity_csv(path):
         wkt = shape or point
 
         if wkt:
-            geometry = shapely.wkt.loads(wkt)
-            row["geojson"] = geojson.Feature(geometry=geometry)
-            del row["geojson"]["properties"]
+            try:
+                geometry = shapely.wkt.loads(wkt)
+                row["geojson"] = geojson.Feature(geometry=geometry)
+                del row["geojson"]["properties"]
 
-            if not row.get("latitude", ""):
-                geometry = geometry.centroid
-                row["longitude"] = "%.6f" % round(Decimal(geometry.x), 6)
-                row["latitude"] = "%.6f" % round(Decimal(geometry.y), 6)
+                if not row.get("latitude", ""):
+                    geometry = geometry.centroid
+                    row["longitude"] = "%.6f" % round(Decimal(geometry.x), 6)
+                    row["latitude"] = "%.6f" % round(Decimal(geometry.y), 6)
 
-            if not row.get("point", ""):
-                row["point"] = "POINT(%s %s)" % (row["longitude"], row["latitude"])
+                if not row.get("point", ""):
+                    row["point"] = "POINT(%s %s)" % (row["longitude"], row["latitude"])
+
+            except WKTReadingError:
+                logging.warning(f"{_dataset} row {row_number} entity {entity}: unable to parse geometry")
 
         e.writerow(row)
 
