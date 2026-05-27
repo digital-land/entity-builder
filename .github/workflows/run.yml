@@ -9,10 +9,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
       with:
-        python-version: 3.8
+        python-version: '3.10'
 
     - name: Install spatialite
       run: |
@@ -44,7 +44,7 @@ jobs:
 
     # Development
     - name: Configure Development AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-access-key-id: ${{secrets.DEVELOPMENT_AWS_ACCESS_KEY_ID}}
         aws-secret-access-key: ${{secrets.DEVELOPMENT_AWS_ACCESS_SECRET}}
@@ -58,7 +58,7 @@ jobs:
 
     # Staging
     - name: Configure Staging AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-access-key-id: ${{secrets.STAGING_AWS_ACCESS_KEY_ID}}
         aws-secret-access-key: ${{secrets.STAGING_AWS_ACCESS_SECRET}}
@@ -72,7 +72,7 @@ jobs:
 
     # Production 
     - name: Configure Production AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-access-key-id: ${{secrets.PROD_AWS_ACCESS_KEY_ID}}
         aws-secret-access-key: ${{secrets.PROD_AWS_ACCESS_SECRET}}
@@ -91,33 +91,20 @@ jobs:
     if: always() && contains(join(needs.*.result, ','), 'failure')
     steps:
       - name: send failure notification
-        uses: slackapi/slack-github-action@v1
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: slackapi/slack-github-action@v3.0.3
         with:
-          channel-id: 'planning-data-alerts'
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            {
-              "text": "Entity Builder Has Failed",
-              "icon_emoji": ":warning:",
-              "username": "CollectionRunner",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Entity Builder Has Failed"
-                  }
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "The report is available on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
-                  }
-                }
-              ]
-            }
+            channel: planning-data-alerts
+            text: "Entity Builder Has Failed"
+            blocks:
+              - type: header
+                text:
+                  type: plain_text
+                  text: "Entity Builder Has Failed"
+              - type: divider
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "The report is available on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
